@@ -2,7 +2,7 @@
 # @Time    : 2021/4/8 20:06
 # @Author  : grassroadsZ
 # @File    : binance_exchange.py
-
+import asyncio
 from pprint import pprint
 
 import ccxt.async_support as ccxt  # noqa: E402
@@ -33,6 +33,10 @@ async def run():
         'secret': 'YOUR_SECRET',
         'enableRateLimit': True
     })
+    # exchange.create_limit_buy_order()
+    # exchange.create_limit_sell_order()
+    # exchange.fetch_ticker()
+    # exchange.fetchMarkets()
     symbol = 'BTC/USDT'
     everything = {
         'spot': await load(exchange, symbol, 'spot'),

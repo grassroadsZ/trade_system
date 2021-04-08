@@ -59,7 +59,7 @@ def un_limit_sport(symbol, kwargs):
                 # help_print("当前交易对:" + kwargs.get("coin_type + "连续买入次数已达" + str(current_num) + "次,暂停买入")
                 return
 
-            res = exchange.buy_limit_msg(symbol, quantity, buy_price)
+            res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
 
             if res.status_code == 200:  # 挂单成功
                 mongo_obj.trade_record(
@@ -77,7 +77,7 @@ def un_limit_sport(symbol, kwargs):
                                                   param=data)
 
             else:
-                res = exchange.sell_limit_msg(symbol, quantity, sell_price)
+                res = exchange.create_limit_sell_order(symbol, quantity, sell_price)
                 if res.status_code:
                     mongo_obj.trade_record(
                         {"response": res, "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
@@ -98,7 +98,7 @@ def un_limit_sport(symbol, kwargs):
                                                           param=kwargs)
 
                 if max_no_buy_count > max_no_buy_num:
-                    res = exchange.buy_limit_msg(symbol, quantity, buy_price)
+                    res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
 
                     if res.status_code == 200:  # 挂单成功
                         mongo_obj.trade_record(
