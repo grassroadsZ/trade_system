@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Vue 测试实例 - 菜鸟教程(runoob.com)</title>
+    <script src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <p>{{ message }}</p>
+    <input type="text">
+<!--    <div v-html="'<input type='text' name='测试'>'"></div>-->
+    <ol>
+    <li v-for="data in data_dict">
+        <input type="text" placeholder="" value="data">
+<!--      {{ data }}-->
+    </li>
+  </ol>
+        <div v-html="'<P>11111111</P><P>11111111</P>'"></div>
+
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            message: 'Hello Vue.js!',
+            data_dict: {
+                "next_buy_price": 2054.25,
+                "grid_sell_price": 2095.75,
+                "step": 1,
+                "profit_ratio": 1,
+                "double_throw_ratio": 1,
+                "quantity": 1,
+                "max_no_sell_count": 1,
+                "buy_with_no_sell_count_ratio": 1,
+                "max_no_buy_count": 1,
+                "max_no_buy_num": 0,
+                "min_num": 5,
+                "current_num": 1,
+                base: "un_limit_sport",
+                txt: "",
+                "is_use": true
+            }
+        }
+    })
+</script>
+</body>
+</html>

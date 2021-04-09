@@ -42,6 +42,7 @@ async def run():
         'spot': await load(exchange, symbol, 'spot'),
         'future': await load(exchange, symbol, 'future'),
     }
+    exchange.create_limit_buy_order
     await exchange.close()
     return everything
 

@@ -34,21 +34,8 @@ class TradeMongoDBTools:
         :param param:  策略的key 对应的value
         :return:
         """
-        self.db["trade_config"].insert_one({'coin_type': 'XRPUSDT', 'user_strategy': '自定义网格',
-                                            "param": {"next_buy_price": 0, "grid_sell_price": 100, "step": 0,
-                                                      "profit_ratio": 0,
-                                                      "double_throw_ratio": 0,
-                                                      "quantity": 5,
-                                                      "max_no_sell_count": 0,
-                                                      "buy_with_no_sell_count_ratio": 1,
-                                                      "max_no_buy_count": 0,
-                                                      "max_no_buy_num": 0,
-                                                      "min_num": 5,
-                                                      "current_num": 0,
-                                                      "base": "un_limit_sport",
-                                                      "txt": "",
-                                                      'is_use': True,
-                                                      }})
+        self.db["trade_config"].insert_one({'coin_type': coin_type, 'user_strategy': user_strategy,
+                                            "param": param})
 
     def get_user_strategy_param_to_strategy_param(self, user_strategy_name):
         """通过用户策略找到基础策略的参数，好像不需要？"""
@@ -68,7 +55,7 @@ class TradeMongoDBTools:
         # 只更新自定义策略的参数
         for key in _:
             _[key] = param[key]
-        print(_)
+        # print(_)
         self.db["trade_config"].find_one_and_update(arg, update={"$set": {"param": _}})
 
     def get_trade_info(self):
@@ -95,6 +82,20 @@ class TradeMongoDBTools:
 if __name__ == '__main__':
     from settings import MONGO_DB
 
+    d = {"next_buy_price": 20.996, "grid_sell_price": 21, "step": 0,
+         "profit_ratio": 1,
+         "double_throw_ratio": 1,
+         "quantity": 5,
+         "max_no_sell_count": 10,
+         "buy_with_no_sell_count_ratio": 1,
+         "max_no_buy_count": 10,
+         "max_no_buy_num": 0,
+         "min_num": 5,
+         "current_num": 0,
+         "base": "un_limit_sport",
+         "txt": "",
+         'is_use': True,
+         }
     # print(TradeMongoDBTools(host='47.105.165.147', user="admin", pwd="123456").get_strategy_param("un_limit_sport"))
-    print(TradeMongoDBTools(**MONGO_DB).get_trade_info())
+    print(TradeMongoDBTools(**MONGO_DB).set_coin_info("ATOMUSDT", "自定义网格", d))
     # print(TradeMongoDBTools(host='47.105.165.147', user="admin", pwd="123456").update_coin_trade_param("XRPUSDT",
