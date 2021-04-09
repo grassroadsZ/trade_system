@@ -7,11 +7,16 @@
 # @Time    : 2021/4/8 11:12
 # @Author  : grassroadsZ
 # @File    : strategy_function.py
+import sys
 
 from handle_mongo_db import TradeMongoDBTools
 from settings import MONGO_DB
-from trade_exchanges.test.binance import exchange
+
 from loguru import logger
+
+from trade_exchanges.binance_exchange import exchange
+
+logger.add("file_{time}_log.txt", format="{time} {level} {message}", )
 
 mongo_obj = TradeMongoDBTools(**MONGO_DB)
 
@@ -56,15 +61,16 @@ def un_limit_sport(symbol, kwargs):
 
         cur_market_price = float(exchange.public_get_ticker_price(params={"symbol": symbol})["price"])  # 当前交易对市价
 
-        logger.info(f"{symbol}当前现价:{cur_market_price} ,期望买入价格{buy_price},期望卖出价格{sell_price}, 当前买入次数{kwargs.get('step')},")
+        logger.info(
+            f"{symbol}当前现价:{cur_market_price} ,期望买入价格{buy_price},期望卖出价格{sell_price}, 当前买入次数{kwargs.get('step')},")
         quantity = get_quantity(kwargs)
         # 设置的买入价 > 当前现货价格
         if buy_price >= cur_market_price:
             if current_num == max_count:
                 return
 
-            # res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
-            res = exchange.create_limit_buy_order()
+            res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
+            # res = exchange.create_limit_buy_order()
 
             if res["status_code"] == 200:  # 挂单成功
                 mongo_obj.trade_record(
@@ -81,8 +87,8 @@ def un_limit_sport(symbol, kwargs):
                                                   param=data)
 
             else:
-                # res = exchange.create_limit_sell_order(symbol, quantity, sell_price)
-                res = exchange.create_limit_sell_order()
+                res = exchange.create_limit_sell_order(symbol, quantity, sell_price)
+                # res = exchange.create_limit_sell_order()
                 if res["status_code"]:
                     mongo_obj.trade_record(
                         {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
@@ -103,8 +109,8 @@ def un_limit_sport(symbol, kwargs):
                                                           param=kwargs)
 
                 if max_no_buy_count > max_no_buy_num:
-                    # res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
-                    res = exchange.create_limit_buy_order()
+                    res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
+                    # res = exchange.create_limit_buy_order()
 
                     if res["status_code"] == 200:  # 挂单成功
                         mongo_obj.trade_record(

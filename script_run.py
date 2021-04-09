@@ -8,6 +8,7 @@ import strategy_function
 
 import concurrent.futures
 
+
 def run():
     all_obj_list = []
     for info in strategy_function.mongo_obj.get_trade_info():
@@ -16,7 +17,8 @@ def run():
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
         # Start the load operations and mark each future with its URL
-        future_to_task = {executor.submit(one_obj["func"], symbol=one_obj["symbol"], kwargs=one_obj["kwargs"]): one_obj for
+        future_to_task = {executor.submit(one_obj["func"], symbol=one_obj["symbol"], kwargs=one_obj["kwargs"]): one_obj
+                          for
                           one_obj in all_obj_list}
         for future in concurrent.futures.as_completed(future_to_task):
             task = future_to_task[future]
@@ -26,6 +28,8 @@ def run():
                 print('%r generated an exception' % (task["symbol"]))
             # else:
             #     print('%s is ok' % (task["symbol"]))
+
+
 while True:
     run()
     time.sleep(1)
