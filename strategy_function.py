@@ -16,7 +16,7 @@ from loguru import logger
 
 from trade_exchanges.binance_exchange import exchange
 
-logger.add("file_{time}_log.txt", format="{time} {level} {message}", enqueue=True, level="INFO")
+logger.add("file_{time}_log.txt", format="{time} {level} {message}", enqueue=True, level="DEBUG")
 
 mongo_obj = TradeMongoDBTools(**MONGO_DB)
 
@@ -73,7 +73,7 @@ def un_limit_sport(symbol, kwargs):
             res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
             # res = exchange.create_limit_buy_order()
 
-            if res.status_code == 200:  # 挂单成功
+            if res["orderId"]:  # 挂单成功
                 mongo_obj.trade_record(
                     {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
                 # 修改买入卖出价格、当前步数
@@ -90,7 +90,7 @@ def un_limit_sport(symbol, kwargs):
             else:
                 res = exchange.create_limit_sell_order(symbol, quantity, sell_price)
                 # res = exchange.create_limit_sell_order()
-                if res.status_code:
+                if res["orderId"]:
                     mongo_obj.trade_record(
                         {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
                 # 修改买入卖出价格、当前步数
@@ -113,7 +113,7 @@ def un_limit_sport(symbol, kwargs):
                     res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
                     # res = exchange.create_limit_buy_order()
 
-                    if res.status_code == 200:  # 挂单成功
+                    if res["orderId"]:  # 挂单成功
                         mongo_obj.trade_record(
                             {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
                         # 修改买入卖出价格、当前步数
