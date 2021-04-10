@@ -71,9 +71,10 @@ def un_limit_sport(symbol, kwargs):
                 return
 
             res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
+            print(res)
             # res = exchange.create_limit_buy_order()
 
-            if res["orderId"]:  # 挂单成功
+            if res["info"]["orderId"]:  # 挂单成功
                 mongo_obj.trade_record(
                     {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
                 # 修改买入卖出价格、当前步数
@@ -90,7 +91,7 @@ def un_limit_sport(symbol, kwargs):
             else:
                 res = exchange.create_limit_sell_order(symbol, quantity, sell_price)
                 # res = exchange.create_limit_sell_order()
-                if res["orderId"]:
+                if res["info"]["orderId"]:
                     mongo_obj.trade_record(
                         {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
                 # 修改买入卖出价格、当前步数
@@ -113,7 +114,7 @@ def un_limit_sport(symbol, kwargs):
                     res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
                     # res = exchange.create_limit_buy_order()
 
-                    if res["orderId"]:  # 挂单成功
+                    if res["info"]["orderId"]:  # 挂单成功
                         mongo_obj.trade_record(
                             {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
                         # 修改买入卖出价格、当前步数
