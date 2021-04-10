@@ -16,7 +16,7 @@ from loguru import logger
 
 from trade_exchanges.binance_exchange import exchange
 
-logger.add("file_{time}_log.txt", format="{time} {level} {message}", )
+logger.add("file_{time}_log.txt", format="{time} {level} {message}", enqueue=True, level="INFO")
 
 mongo_obj = TradeMongoDBTools(**MONGO_DB)
 
