@@ -26,7 +26,7 @@ class TradeMongoDBTools:
             param_list.append(i)
         return param_list[0]
 
-    def set_coin_info(self, coin_type: str, user_strategy: str, param: dict):
+    def set_coin_info(self, coin_type: str, user_strategy: str, is_use: bool, param: dict):
         """
         设置交易对信息到 trade_config
         :param coin_type: XRPUSDT
@@ -34,7 +34,7 @@ class TradeMongoDBTools:
         :param param:  策略的key 对应的value
         :return:
         """
-        self.db["trade_config"].insert_one({'coin_type': coin_type, 'user_strategy': user_strategy,
+        self.db["trade_config"].insert_one({'coin_type': coin_type, 'user_strategy': user_strategy, "is_use": is_use,
                                             "param": param})
 
     def get_user_strategy_param_to_strategy_param(self, user_strategy_name):
@@ -65,7 +65,7 @@ class TradeMongoDBTools:
         """
         # 查询所有交易信息
         trade_info_list = []
-        for i in self.db['trade_config'].find():
+        for i in self.db['trade_config'].find({"is_use": True}):
             param = i["param"]
             param["user_strategy"] = i["user_strategy"]
 
@@ -77,6 +77,10 @@ class TradeMongoDBTools:
         data = {"date": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
         data.update(kwargs)
         self.db["trade_record"].insert_one(data)
+
+    def set_uniq_index(self):
+        self.db["trade_config"].ensure_index({"coin_type": 1, "user_strategy": 1}, {"unique": True})
+        self.db["user_strategy"].ensure_index({"coin_type": 1, "name": 1}, {"unique": True})
 
 
 if __name__ == '__main__':
@@ -96,6 +100,4 @@ if __name__ == '__main__':
          "txt": "",
          'is_use': True,
          }
-    # print(TradeMongoDBTools(host='47.105.165.147', user="admin", pwd="123456").get_strategy_param("un_limit_sport"))
-    print(TradeMongoDBTools(**MONGO_DB).set_coin_info("ATOMUSDT", "自定义网格", d))
-    # print(TradeMongoDBTools(host='47.105.165.147', user="admin", pwd="123456").update_coin_trade_param("XRPUSDT",
+    print(TradeMongoDBTools(**MONGO_DB).set_coin_info("ATOMUSDT", "自定义网格", True, d))
