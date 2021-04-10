@@ -8,7 +8,7 @@ import strategy_function
 
 import concurrent.futures
 
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
 
 
 def run():
