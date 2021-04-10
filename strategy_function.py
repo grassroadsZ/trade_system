@@ -59,7 +59,8 @@ def un_limit_sport(symbol, kwargs):
 
     try:
 
-        cur_market_price = float(exchange.public_get_ticker_price(params={"symbol": symbol})["price"])  # 当前交易对市价
+        cur_market_price = float(
+            exchange.public_get_ticker_price(params={"symbol": symbol.replace("/", "")})["price"])  # 当前交易对市价
 
         logger.info(
             f"{symbol}当前现价:{cur_market_price} ,期望买入价格{buy_price},期望卖出价格{sell_price}, 当前买入次数{kwargs.get('step')},")
@@ -72,7 +73,7 @@ def un_limit_sport(symbol, kwargs):
             res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
             # res = exchange.create_limit_buy_order()
 
-            if res["status_code"] == 200:  # 挂单成功
+            if res.status_code == 200:  # 挂单成功
                 mongo_obj.trade_record(
                     {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
                 # 修改买入卖出价格、当前步数
@@ -89,7 +90,7 @@ def un_limit_sport(symbol, kwargs):
             else:
                 res = exchange.create_limit_sell_order(symbol, quantity, sell_price)
                 # res = exchange.create_limit_sell_order()
-                if res["status_code"]:
+                if res.status_code:
                     mongo_obj.trade_record(
                         {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
                 # 修改买入卖出价格、当前步数
@@ -112,7 +113,7 @@ def un_limit_sport(symbol, kwargs):
                     res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
                     # res = exchange.create_limit_buy_order()
 
-                    if res["status_code"] == 200:  # 挂单成功
+                    if res.status_code == 200:  # 挂单成功
                         mongo_obj.trade_record(
                             {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
                         # 修改买入卖出价格、当前步数
