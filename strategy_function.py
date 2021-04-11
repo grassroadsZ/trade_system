@@ -7,13 +7,11 @@
 # @Time    : 2021/4/8 11:12
 # @Author  : grassroadsZ
 # @File    : strategy_function.py
-import sys
-
-from handle_mongo_db import TradeMongoDBTools
-from settings import MONGO_DB
 
 from loguru import logger
 
+from handle_mongo_db import TradeMongoDBTools
+from settings import MONGO_DB
 from trade_exchanges.binance_exchange import exchange
 
 logger.add("file_{time}_log.txt", format="{time} {level} {message}", enqueue=True, level="DEBUG")
@@ -30,9 +28,6 @@ def un_limit_sport(symbol, kwargs):
     buy_with_no_sell_count_ratio = kwargs.get("buy_with_no_sell_count_ratio")  # 连续买入/最大买入而不卖出的比例
 
     step = kwargs.get("step")  # 当前步数
-
-    max_no_buy_count = kwargs.get("max_no_buy_count")  # 连续当前价格大于期望买入价格次数的设值
-    max_no_buy_num = kwargs.get("max_no_buy_num")  # 连续当前价格大于期望买入价格次数的计数值
 
     def get_quantity(kwargs: dict):
         quantity = kwargs.get("quantity") * 2  # 买入数量
@@ -63,20 +58,21 @@ def un_limit_sport(symbol, kwargs):
             exchange.public_get_ticker_price(params={"symbol": symbol.replace("/", "")})["price"])  # 当前交易对市价
 
         logger.info(
-            f"{symbol}当前现价:{cur_market_price} ,期望买入价格{buy_price},期望卖出价格{sell_price}, 当前买入次数{kwargs.get('step')},")
+            f"{symbol}当前现价:{cur_market_price} ,期望买入价格{buy_price},期望卖出价格{sell_price}, 当前买入次数{kwargs.get('step')},当前连续买入而不卖出次数{kwargs.get('current_num')}")
         quantity = get_quantity(kwargs)
         # 设置的买入价 > 当前现货价格
         if buy_price >= cur_market_price:
             if current_num == max_count:
+                logger.info(f"当前连续买入次数以达 设定值{max_count},当前币种取消买入")
                 return
 
+            logger.info(f"创建 价格为 {buy_price} 的限价买单")
+
             res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
-            print(res)
-            # res = exchange.create_limit_buy_order()
 
             if res["info"]["orderId"]:  # 挂单成功
                 mongo_obj.trade_record(
-                    {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
+                    {"response": res['info'], "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
                 # 修改买入卖出价格、当前步数
                 data = update_data(kwargs, buy_price, 1, 1)
                 mongo_obj.update_coin_trade_param(coin_type=symbol, user_strategy_name=kwargs.get("user_strategy"),
@@ -89,39 +85,16 @@ def un_limit_sport(symbol, kwargs):
                                                   param=data)
 
             else:
+                logger.info(f"创建价格为 {sell_price} 的限价卖单")
                 res = exchange.create_limit_sell_order(symbol, quantity, sell_price)
                 # res = exchange.create_limit_sell_order()
                 if res["info"]["orderId"]:
                     mongo_obj.trade_record(
-                        {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
+                        {"response": res['info'], "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
                 # 修改买入卖出价格、当前步数
                 data = update_data(kwargs, sell_price, -1, -1)
                 mongo_obj.update_coin_trade_param(coin_type=symbol, user_strategy_name=kwargs.get("user_strategy"),
                                                   param=data)
-
-                # 现价 > 期望买入价格 且现价 > 期望卖出价格 且 这个次数 > 设定值，就以现价买入
-                if step > 0:
-                    if buy_price < cur_market_price:
-                        # 计数+1
-                        max_no_buy_num = kwargs.get("max_no_buy_num")
-                        max_no_buy_num += 1
-                        kwargs["max_no_buy_num"] = max_no_buy_num
-                        mongo_obj.update_coin_trade_param(coin_type=symbol,
-                                                          user_strategy_name=kwargs.get("user_strategy"),
-                                                          param=kwargs)
-
-                if max_no_buy_count > max_no_buy_num:
-                    res = exchange.create_limit_buy_order(symbol, quantity, buy_price)
-                    # res = exchange.create_limit_buy_order()
-
-                    if res["info"]["orderId"]:  # 挂单成功
-                        mongo_obj.trade_record(
-                            {"response": str(res), "user_strategy": kwargs.get("user_strategy"), "coin_type": symbol})
-                        # 修改买入卖出价格、当前步数
-                        data = update_data(kwargs, buy_price, 1, 1)
-                        mongo_obj.update_coin_trade_param(coin_type=symbol,
-                                                          user_strategy_name=kwargs.get("user_strategy"),
-                                                          param=data)
 
     except Exception as e:
         logger.info(f"{symbol}币种运行失败,原因是：{e}")
